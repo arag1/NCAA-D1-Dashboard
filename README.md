@@ -64,3 +64,6 @@ pip install -r requirements.txt
 
 # Access website
 http://localhost:5001/
+
+### For using OpenAI + Langchain
+Make sure to generate and download OpenAI key. Save it to .env file. 
