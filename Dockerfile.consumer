@@ -1,0 +1,32 @@
+FROM bitnami/spark:3.3.1
+
+USER root
+WORKDIR /app
+
+# Install Python3, pip, and procps (for ps command)
+RUN apt-get update && apt-get install -y python3 python3-pip procps && \
+    ln -sf /usr/bin/python3 /usr/bin/python && \
+    python -m pip install --upgrade pip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+#Run pyspark
+RUN pip install pyspark==3.3.1
+
+# Run watchog
+RUN pip install watchdog
+
+#Run python dotenv
+RUN pip install python-dotenv
+#Run langchain community
+RUN pip install langchain-community
+# Copy your Spark consumer script
+COPY spark_streaming_consumer.py .
+
+# Revert to spark default user for security
+USER 1001
+
+CMD ["spark-submit", "--packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.1", "/app/spark_streaming_consumer.py"]

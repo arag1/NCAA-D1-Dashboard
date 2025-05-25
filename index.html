@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NCAA Stats Live</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  h2 { margin-top: 2rem; }
+  table { border-collapse: collapse; width: 100%; max-width: 700px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+</style>
+</head>
+<body>
+  <h1>Live NCAA Player Stats</h1>
+  <div id="stats-container">Connecting...</div>
+
+  <script>
+    const container = document.getElementById("stats-container");
+    const socket = new WebSocket("ws://localhost:8765");
+
+    socket.onopen = () => {
+      container.innerHTML = "<p>Connected. Waiting for data...</p>";
+    };
+
+    socket.onerror = (err) => {
+      container.innerHTML = "<p style='color:red;'>WebSocket error. Check console.</p>";
+      console.error("WebSocket error:", err);
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const { category, rows } = data;
+
+      let html = `<h2>${category}</h2>`;
+      if (!rows || rows.length === 0) {
+        html += "<p>No data available.</p>";
+      } else {
+        html += "<table><thead><tr>";
+        // Dynamic table headers from keys of first row
+        Object.keys(rows[0]).forEach(key => {
+          html += `<th>${key}</th>`;
+        });
+        html += "</tr></thead><tbody>";
+        rows.forEach(row => {
+          html += "<tr>";
+          Object.values(row).forEach(val => {
+            html += `<td>${val}</td>`;
+          });
+          html += "</tr>";
+        });
+        html += "</tbody></table>";
+      }
+
+      // Append or replace section for this category
+      let sectionId = "section-" + category.toLowerCase().replace(/\s+/g, "-");
+      let section = document.getElementById(sectionId);
+      if (!section) {
+        section = document.createElement("section");
+        section.id = sectionId;
+        container.appendChild(section);
+      }
+      section.innerHTML = html;
+    };
+
+    socket.onclose = () => {
+      container.innerHTML += "<p>Disconnected from server.</p>";
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+requests
+beautifulsoup4
+kafka-python
+#pyspark==3.3.1
+websockets
+py4j
+flask
+aiohttp
+pandas
+langchain
+openai
